@@ -20,14 +20,32 @@ router.get('/', async (req, res) => {
 // Respond with the bank, product name, and the monthly payment, total payback amount. (rate period is fixed interest rate for this period)
 router.post('/', async (req, res) => {
     // console.log('Incoming home request')
-    const loanPer100K = Math.floor(req.body.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
-    const query = {
-        year: {$eq: req.body.year},
-        minSalary: {$lte: req.body.salary},
-        maxSalary: {$gte: req.body.salary},
-        minLoan: {$lte: req.body.loan},
-        maxLoan: {$gte: req.body.loan},
+    if (
+        typeof req.body.year !== 'string' ||
+        typeof req.body.salary !== 'string' ||
+        typeof req.body.loan !== 'string'
+    ) return res.status(400).json({error: 'Bad request received'})
+    const reqData = {
+        year: parseInt(req.body.year.replace(/\s+/g, '')),
+        salary: parseInt(req.body.salary.replace(/\s+/g, '')),
+        loan: parseInt(req.body.loan.replace(/\s+/g, ''))
     }
+    const loanPer100K = Math.floor(reqData.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
+    const query = {
+        year: {$eq: reqData.year},
+        minSalary: {$lte: reqData.salary},
+        maxSalary: {$gte: reqData.salary},
+        minLoan: {$lte: reqData.loan},
+        maxLoan: {$gte: reqData.loan},
+    }
+    // const loanPer100K = Math.floor(req.body.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
+    // const query = {
+    //     year: {$eq: req.body.year},
+    //     minSalary: {$lte: req.body.salary},
+    //     maxSalary: {$gte: req.body.salary},
+    //     minLoan: {$lte: req.body.loan},
+    //     maxLoan: {$gte: req.body.loan},
+    // }
     try{
         Home.aggregate([
             {$match: query},
@@ -86,6 +104,22 @@ router.post('/', async (req, res) => {
 //                 }
 //             }
 //         }]
+//     )
+//     res.json(updateRec) 
+// })
+
+// update screwed up bank name for Erste
+// router.patch('/', async (req, res) => {
+//     console.log(req.body.bank)
+//     const updateRec = await Home.updateMany(
+//         {
+//             bank: req.body.bank
+//         },
+//         {
+//             $set: {
+//                 bank: 'Erste Bank'
+//             }
+//         }
 //     )
 //     res.json(updateRec) 
 // })

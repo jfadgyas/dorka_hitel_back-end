@@ -16,17 +16,28 @@ router.get('/', async (req, res) => {
 })
 
 // Incoming request from front end:
+// Check if the request is in the right format (string)
+// Convert to numbers
 // Filter the records with a query based on the received data (loan years, salary, loan amount)
 // Respond with the bank, product name, and the monthly payment, and total payback amount
 router.post('/', async (req, res) => {
-    // console.log('Incoming personal request')
-    const loanPer100K = Math.floor(req.body.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
+    if (
+        typeof req.body.year !== 'string' ||
+        typeof req.body.salary !== 'string' ||
+        typeof req.body.loan !== 'string'
+    ) return res.status(400).json({error: 'Bad request received'})
+    const reqData = {
+        year: parseInt(req.body.year.replace(/\s+/g, '')),
+        salary: parseInt(req.body.salary.replace(/\s+/g, '')),
+        loan: parseInt(req.body.loan.replace(/\s+/g, ''))
+    }
+    const loanPer100K = Math.floor(reqData.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
     const query = {
-        year: {$eq: req.body.year},
-        minSalary: {$lte: req.body.salary},
-        maxSalary: {$gte: req.body.salary},
-        minLoan: {$lte: req.body.loan},
-        maxLoan: {$gte: req.body.loan},
+        year: {$eq: reqData.year},
+        minSalary: {$lte: reqData.salary},
+        maxSalary: {$gte: reqData.salary},
+        minLoan: {$lte: reqData.loan},
+        maxLoan: {$gte: reqData.loan},
     }
     try{
         Personal.aggregate(

@@ -19,11 +19,19 @@ router.get('/', async (req, res) => {
 // Filter the records with a query based on the received data (loan years, loan amount)
 // Respond with the bank, product name, and the monthly payment, and total payback amount
 router.post('/', async (req, res) => {
-    const loanPer100K = Math.floor(req.body.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
+    if (
+        typeof req.body.year !== 'string' ||
+        typeof req.body.loan !== 'string'
+    ) return res.status(400).json({error: 'Bad request received'})
+    const reqData = {
+        year: parseInt(req.body.year.replace(/\s+/g, '')),
+        loan: parseInt(req.body.loan.replace(/\s+/g, ''))
+    }
+    const loanPer100K = Math.floor(reqData.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
     const query = {
-        year: {$eq: req.body.year},
-        minLoan: {$lte: req.body.loan},
-        maxLoan: {$gte: req.body.loan},
+        year: {$eq: reqData.year},
+        minLoan: {$lte: reqData.loan},
+        maxLoan: {$gte: reqData.loan},
     }
     try{
         Baby.aggregate(
