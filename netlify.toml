@@ -1,0 +1,10 @@
+[build]
+    functions="functions"
+
+[functions]
+    node_bundler = "esbuild"
+
+[[redirects]]
+    to="/.netlify/functions/app"
+    from="/*"
+    status=200 
