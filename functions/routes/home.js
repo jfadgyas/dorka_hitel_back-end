@@ -70,12 +70,14 @@ router.post('/:bank', async (req, res) => {
     ) return res.status(400).json({error: 'Bad request received'})
     const reqData = {
         bank: req.params.bank,
+        years: [30, 25, 20, 15, 10, 5, parseInt(req.body.year.replace(/\s+/g, ''))],
         salary: parseInt(req.body.salary.replace(/\s+/g, '')),
         loan: parseInt(req.body.loan.replace(/\s+/g, ''))
     }
     const loanPer100K = Math.floor(reqData.loan/100000) // how many times you must count the installment (loan=2M => 2M/100k = 20*term)
     const query = {
         bank: reqData.bank,
+        year: {$in: reqData.years},
         minSalary: {$lte: reqData.salary},
         maxSalary: {$gte: reqData.salary},
         minLoan: {$lte: reqData.loan},
